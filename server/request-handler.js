@@ -14,6 +14,22 @@ this file and include it in basic-server.js so that it actually works.
 
 var exports = module.exports = {};
 
+// These headers will allow Cross-Origin Resource Sharing (CORS).
+// This code allows this server to talk to websites that
+// are on different domains, for instance, your chat client.
+//
+// Your chat client is running from a url like file://your/chat/client/index.html,
+// which is considered a different domain.
+//
+// Another way to get around this restriction is to serve you chat
+// client from this domain by setting up static file serving.
+var defaultCorsHeaders = {
+  'access-control-allow-origin': '*',
+  'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'access-control-allow-headers': 'content-type, accept',
+  'access-control-max-age': 10 // Seconds.
+};
+
 var requestHandler = function(request, response) {
   // const { method, url, headers } = request;
   // Request and Response come from node's http module.
@@ -34,7 +50,7 @@ var requestHandler = function(request, response) {
 
   // The outgoing status.
   
-  var statusCode;
+  var statusCode = 404;
 
   // See the note below about CORS headers.
   // var headers = defaultCorsHeaders;
@@ -69,44 +85,25 @@ var requestHandler = function(request, response) {
 
   
   
-  if(request.method === 'GET') {
-    statusCode = '200';
-    if (request.url !== '/classes/messages') {
-      statusCode = '404';
-    }
+  if(request.method === 'GET' && request.url === '/classes/messages') {
+    statusCode = 200;
     response.writeHead(statusCode, headers);
     response.write(JSON.stringify(body));//fix this
 
     response.end();
     }
 
-  if(request.method === 'POST') {
-    console.log(request.data);
-    statusCode = '201';
+  if(request.method === 'POST' && request.url === '/classes/messages') {
+    statusCode = 201;
     response.writeHead(statusCode, headers);
     request.on('data', (chunk) => {//fix this
-      body.results.push(chunk);
+      body.results.push((chunk));
     })
     response.end();
   }
  
 };
 
-// These headers will allow Cross-Origin Resource Sharing (CORS).
-// This code allows this server to talk to websites that
-// are on different domains, for instance, your chat client.
-//
-// Your chat client is running from a url like file://your/chat/client/index.html,
-// which is considered a different domain.
-//
-// Another way to get around this restriction is to serve you chat
-// client from this domain by setting up static file serving.
-var defaultCorsHeaders = {
-  'access-control-allow-origin': '*',
-  'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'access-control-allow-headers': 'content-type, accept',
-  'access-control-max-age': 10 // Seconds.
-};
 
 exports.requestHandler = requestHandler;
 exports.defaultCorsHeaders = defaultCorsHeaders;
