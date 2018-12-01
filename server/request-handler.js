@@ -33,28 +33,31 @@ var requestHandler = function(request, response) {
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
 
   // The outgoing status.
-  var statusCode = 200;
-  response.statusCode = statusCode;
+  
+  var statusCode;
 
   // See the note below about CORS headers.
-  var headers = defaultCorsHeaders;
+  // var headers = defaultCorsHeaders;
 
   // Tell the client we are sending them plain text.
   //
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
+  var headers = {};
   headers['Content-Type'] = 'application/json';
 
-  // var data = [{text: 'hello'}];
-
-  // headers['Contents'] = [];
+  var body = {
+    results: [{username: 'Jono',
+    roomname: 'lobby',
+    text: 'Do my bidding!'}]
+  }
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
   
-  response.writeHead(response.statusCode, headers);
+  // response.writeHead(response.statusCode, headers);
 
-  response.end();
+  // response.end();
 
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
@@ -64,16 +67,28 @@ var requestHandler = function(request, response) {
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
 
-  // if(request.method === 'GET') {
-  //   // data = data.slice(0, 100);
-  //   // response.setHeader('data', JSON.stringify(data))
-  //   // response.writeHead(statusCode, {'Content-Type': 'application/json'});
-  //   response.end('200');
-  //   }
+  
+  
+  if(request.method === 'GET') {
+    statusCode = '200';
+    if (request.url !== '/classes/messages') {
+      statusCode = '404';
+    }
+    response.writeHead(statusCode, headers);
+    response.write(JSON.stringify(body));//fix this
 
-  // if(request.method === 'POST') {
-  //   response.end('201');
-  // }
+    response.end();
+    }
+
+  if(request.method === 'POST') {
+    console.log(request.data);
+    statusCode = '201';
+    response.writeHead(statusCode, headers);
+    request.on('data', (chunk) => {//fix this
+      body.results.push(chunk);
+    })
+    response.end();
+  }
  
 };
 
